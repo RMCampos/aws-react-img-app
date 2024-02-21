@@ -1,0 +1,26 @@
+#main-home {
+  margin: auto;
+  padding: 10px;
+}
+
+#main-home h1 {
+  text-align: center;
+}
+
+.row {
+  margin: auto;
+}
+
+.column {
+  float: left;
+  width: 40%;
+  background-color: #ccc;
+  margin: 5px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}

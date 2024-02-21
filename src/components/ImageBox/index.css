@@ -1,0 +1,10 @@
+#image-box {
+  border: 1px solid #cecece;
+  border-radius: 7px;
+  max-width: 80%;
+  margin: auto;
+}
+
+#image-box h3 {
+  padding: 250px 0;
+}
