@@ -1,10 +1,18 @@
-#image-box {
-  border: 1px solid #cecece;
-  border-radius: 7px;
-  max-width: 80%;
-  margin: auto;
+.box-row {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 4px;
 }
 
-#image-box h3 {
-  padding: 250px 0;
+/* Create four equal columns that sits next to each other */
+.box-column {
+  flex: 25%;
+  max-width: 25%;
+  padding: 0 4px;
+}
+
+.box-column img {
+  margin-top: 8px;
+  vertical-align: middle;
+  width: 100%;
 }
