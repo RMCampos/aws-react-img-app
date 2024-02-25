@@ -16,8 +16,8 @@ const Upload = () => {
     setIsDropActive(dragActive);
   }, []);
 
-  const onFilesDrop = useCallback((files: (File | null)[]) => {
-    setFiles(files);
+  const onFilesDrop = useCallback((filesParam: (File | null)[]) => {
+    setFiles(prev => [...prev, ...filesParam]);
   }, []);
 
   const uploadImages = useCallback(() => {
@@ -29,15 +29,21 @@ const Upload = () => {
     console.log(`${files.length} image(s) to upload...`);
     
     const s3Images:ImageryType[] = [];
-    files.map((img) => {
-      console.log('saving ', img?.name);
+    //files.map((img) => {
+      console.log('saving ', files[0]?.name);
       s3Images.push({
-        src: img?.name ?? 'ha',
-        alt: img?.name ?? 'be',
+        name: files[0]?.name, 
+        src: files[0]?.name,
+        alt: files[0]?.name,
+        size: files[0]?.size,
+        type: files[0]?.type,
       });
-    });
+    //});
 
-    handleUpload(s3Images);
+    handleUpload(s3Images)
+      .then(() => {
+        // echo success
+      });
   }, [files]);
 
   return (

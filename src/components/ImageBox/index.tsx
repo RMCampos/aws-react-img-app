@@ -1,18 +1,20 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import './index.css';
 import ImageryContext from "../../context/ImageryContext";
 
 export default function ImageBox() {
-  const { images, getImages } = useContext(ImageryContext);
+  const { getImages } = useContext(ImageryContext);
+  const [ images, setImages ] = useState<string[] | null>([]);
 
   useEffect(() => {
-    console.log(`Images length changed: ${images.length}`);
-    getImages();
+    console.log(`Images length changed: ${images?.length}`);
+    getImages()
+      .then((imgs) => setImages(imgs));
   }, [images]);
 
   return (
-    images.length === 0 ? (
+    images?.length === 0 ? (
       <div className="text-center">
         <h3>No images to show :(</h3>
         <p>Try uploading a new one!</p>
@@ -20,8 +22,8 @@ export default function ImageBox() {
     ) : (
       <div className="box-row">
         <div className="box-column">
-          {images.map((image) => (
-            <img key={image.src} src={image.src} alt={image.alt} />
+          {images?.map((image) => (
+            <p key={image}>{image}</p>
           ))}
         </div>
       </div>

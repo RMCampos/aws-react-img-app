@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import ImageryType from "../types/ImageryType";
 import ImageryContext from "./ImageryContext";
-import { ListObjectsV2Command, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 
 interface Props {
   children: React.ReactNode;
@@ -30,8 +30,6 @@ function getBucketName(): string {
 }
 
 const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: Props) => {
-  const [images, setImages] = useState<ImageryType[] | []>([]);
-
   const getImages = async (): Promise<string[] | null> => {
     const client = getS3Client();
     const bucketName = getBucketName();
@@ -50,23 +48,24 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
 
     try {
       let isTruncated: boolean | undefined = true;
-      let contents = '';
+      const contents :string[] = [];
 
       while (isTruncated) {
         const { Contents, IsTruncated, NextContinuationToken } = await client.send(command);
         const contentList = Contents?.map((c) => ` - ${c.Key}`).join('\n');
-        contents += contentList + '\n';
+        if (contentList) {
+          contents.push(contentList);
+        }
         isTruncated = IsTruncated;
         command.input.ContinuationToken = NextContinuationToken;
       }
 
       if (!contents) {
-        console.log(contents);
-      } else {
         console.log('No content found in the bucket!');
+        return Promise.resolve(null);
       }
       
-      return Promise.resolve(null);
+      return Promise.resolve(contents);
     } catch (e) {
       console.error(e);
     }
@@ -75,21 +74,34 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
   };
 
   const handleUpload = async(newImages: ImageryType[]): Promise<void> => {
-    console.log('add new image!');
+    console.log('add images!');
+    console.log(`${newImages.length} to send!`);
 
-    setImages([
-      ...images,
-      ...newImages
-    ]);
+    const client = getS3Client();
+    const bucketName = getBucketName();
 
-    return Promise.resolve();
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: newImages[0].name,
+      Body: newImages[0].name
+    });
+
+    try {
+      const response = await client.send(command);
+      if (response.$metadata.httpStatusCode === 200) {
+        return Promise.resolve();
+      }
+      return Promise.reject();
+    } catch (e) {
+      console.error(e);
+      return Promise.reject();
+    }
   };
 
   const contextValue = useMemo(() => ({
-    images,
     getImages,
     handleUpload
-  }), [images, getImages, handleUpload]);
+  }), [getImages, handleUpload]);
 
   return (
     <ImageryContext.Provider value={contextValue}>
