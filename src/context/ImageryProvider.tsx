@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import ImageryType from "../types/ImageryType";
 import ImageryContext from "./ImageryContext";
-import { ListObjectsV2Command, PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 
 interface Props {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ function getBucketName(): string {
 }
 
 const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: Props) => {
-  const getImages = async (): Promise<string[] | null> => {
+  const getImages = async (): Promise<ImageryType[] | null> => {
     const client = getS3Client();
     const bucketName = getBucketName();
 
@@ -48,14 +48,20 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
 
     try {
       let isTruncated: boolean | undefined = true;
-      const contents :string[] = [];
+      const contents :ImageryType[] = [];
 
       while (isTruncated) {
         const { Contents, IsTruncated, NextContinuationToken } = await client.send(command);
-        const contentList = Contents?.map((c) => ` - ${c.Key}`).join('\n');
-        if (contentList) {
-          contents.push(contentList);
-        }
+        Contents?.forEach((content) => {
+          if (content && content.Key) {
+            const item: ImageryType = {
+              name: content.Key,
+              content: ''
+            };
+
+            contents.push(item);
+          }
+        });
         isTruncated = IsTruncated;
         command.input.ContinuationToken = NextContinuationToken;
       }
@@ -73,17 +79,14 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
     return Promise.reject();
   };
 
-  const handleUpload = async(newImages: ImageryType[]): Promise<void> => {
-    console.log('add images!');
-    console.log(`${newImages.length} to send!`);
-
+  const handleUpload = async(item: ImageryType): Promise<void> => {
     const client = getS3Client();
     const bucketName = getBucketName();
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
-      Key: newImages[0].name,
-      Body: newImages[0].name
+      Key: item.name,
+      Body: item.content
     });
 
     try {
@@ -98,10 +101,59 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
     }
   };
 
+  const getContent = async (key: string): Promise<ImageryType> => {
+    const client = getS3Client();
+    const bucketName = getBucketName();
+
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: key
+    });
+
+    try {
+      const response = await client.send(command);
+      // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
+      if (response.$metadata.httpStatusCode === 200) {
+        const str = await response.Body.transformToString();
+        return Promise.resolve({
+          name: key,
+          content: str
+        });
+      }
+      return Promise.reject();
+    } catch (e) {
+      console.error(e);
+      return Promise.reject();
+    }
+  };
+
+  const deleteItem = async(key: string): Promise<void> => {
+    const client = getS3Client();
+    const bucketName = getBucketName();
+
+    const command = new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: key
+    });
+
+    try {
+      const response = await client.send(command);
+      if (response.$metadata.httpStatusCode === 204) {
+        return Promise.resolve();
+      }
+      return Promise.resolve();
+    } catch (e) {
+      console.error(e);
+      return Promise.reject();
+    }
+  };
+
   const contextValue = useMemo(() => ({
     getImages,
-    handleUpload
-  }), [getImages, handleUpload]);
+    handleUpload,
+    getContent,
+    deleteItem,
+  }), [getImages, handleUpload, getContent, deleteItem]);
 
   return (
     <ImageryContext.Provider value={contextValue}>

@@ -1,10 +1,7 @@
 
 type ImageryType = {
-  name?: string;
-  src?: string;
-  alt?: string;
-  size?: number;
-  type?: string;
+  name: string;
+  content: string;
 }
 
 export default ImageryType;

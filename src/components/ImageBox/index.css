@@ -1,18 +1,4 @@
-.box-row {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 0 4px;
-}
-
-/* Create four equal columns that sits next to each other */
-.box-column {
-  flex: 25%;
-  max-width: 25%;
-  padding: 0 4px;
-}
-
-.box-column img {
-  margin-top: 8px;
-  vertical-align: middle;
-  width: 100%;
+.bucket-item {
+  background-color: #FFF;
+  color: #212529;
 }

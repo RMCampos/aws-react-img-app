@@ -1,4 +1,3 @@
 export const PageTitles = {
-  root: 'AWS React Imagery App',
-  upload: 'Upload Image',
+  root: 'AWS React Buckets App',
 };

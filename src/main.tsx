@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import Upload from './routes/upload';
 import Root from './routes/root';
 import ErrorPage from './error-page';
 
@@ -15,10 +14,6 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <ErrorPage />,
   },
-  {
-    path: '/upload',
-    element: <Upload />
-  }
 ]);  
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
