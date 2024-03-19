@@ -9,10 +9,8 @@ interface Props {
 }
 
 function getS3Client(): S3Client {
-  console.log('import.meta.env.REACT_APP_AWS_REGION=', import.meta.env.REACT_APP_AWS_REGION);
-  console.log('import.meta.env=', import.meta.env);
   const awsRegion = import.meta.env.REACT_APP_AWS_REGION ?? env.REACT_APP_AWS_REGION;
-  console.log(`AWS Region: ${awsRegion}`);
+  console.log(`[Config] Amazon Region: ${awsRegion}`);
 
   const config: S3ClientConfig = {
     region: awsRegion,
@@ -28,7 +26,7 @@ function getS3Client(): S3Client {
 
 function getBucketName(): string {
   const bucketName = env.REACT_APP_AWS_S3_BUCKET_NAME ?? '';
-  console.log(`Amazon S3 bucket nam: ${bucketName}`);
+  console.log(`[Config] Amazon S3 Bucket name: ${bucketName}`);
   return bucketName;
 }
 
@@ -70,9 +68,11 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
       }
 
       if (!contents) {
-        console.log('No content found in the bucket!');
+        console.log('No content found in the Bucket!');
         return Promise.resolve(null);
       }
+
+      console.log(`${contents.length} item(ns) found in the Bucket!`);
       
       return Promise.resolve(contents);
     } catch (e) {
