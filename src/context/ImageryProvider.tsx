@@ -32,16 +32,17 @@ function getBucketName(): string {
 
 const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: Props) => {
   const getImages = async (): Promise<ImageryType[] | null> => {
+    // Docs: https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
+    console.log('Getting text files from S3 Bucket...');
+
     const client = getS3Client();
     const bucketName = getBucketName();
 
-    if (bucketName === '') {
+    if (!bucketName) {
+      console.log('Bucket name not set up! Leaving!');
       return Promise.reject();
     }
     
-    // Docs: https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
-    console.log(`Getting images from S3 bucket ${bucketName}!`);
-
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
       MaxKeys: 10,
@@ -83,8 +84,15 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
   };
 
   const handleUpload = async(item: ImageryType): Promise<void> => {
+    console.log('Uploading text files to S3 Bucket...');
+
     const client = getS3Client();
     const bucketName = getBucketName();
+
+    if (!bucketName) {
+      console.log('Bucket name not set up! Leaving!');
+      return Promise.reject();
+    }
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
@@ -95,8 +103,11 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
     try {
       const response = await client.send(command);
       if (response.$metadata.httpStatusCode === 200) {
+        console.log('Text file successfully uploaded!');
         return Promise.resolve();
       }
+
+      console.log('An error ocurred when trying to upload file!');
       return Promise.reject();
     } catch (e) {
       console.error(e);
@@ -105,8 +116,15 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
   };
 
   const getContent = async (key: string): Promise<ImageryType> => {
+    console.log('Getting specific text file content from S3 Bucket...');
+
     const client = getS3Client();
     const bucketName = getBucketName();
+
+    if (!bucketName) {
+      console.log('Bucket name not set up! Leaving!');
+      return Promise.reject();
+    }
 
     const command = new GetObjectCommand({
       Bucket: bucketName,
@@ -118,11 +136,13 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
       // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
       if (response.$metadata.httpStatusCode === 200) {
         const str = await response.Body?.transformToString() ?? '';
+        console.log('Text file content successfully retrieved!');
         return Promise.resolve({
           name: key,
           content: str
         });
       }
+      console.log('An error ocurred when trying to get the file content!');
       return Promise.reject();
     } catch (e) {
       console.error(e);
@@ -131,8 +151,15 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
   };
 
   const deleteItem = async(key: string): Promise<void> => {
+    console.log('Deleting text file from S3 Bucket...');
+
     const client = getS3Client();
     const bucketName = getBucketName();
+
+    if (!bucketName) {
+      console.log('Bucket name not set up! Leaving!');
+      return Promise.reject();
+    }
 
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
@@ -142,8 +169,11 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
     try {
       const response = await client.send(command);
       if (response.$metadata.httpStatusCode === 204) {
+        console.log('Text file successfully deleted!');
         return Promise.resolve();
       }
+
+      console.log('An error ocurred when trying to delete the file!');
       return Promise.resolve();
     } catch (e) {
       console.error(e);
