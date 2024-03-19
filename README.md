@@ -29,7 +29,8 @@ Running:
 
 ```sh
 docker run -it --rm \
-  -p 5173:80 \
+  -p 3000:3000 \
+  --env-file .env \
   --name aws-react-img-app \
   rmcampos/aws-react-img-app:0.0.1
 ```

@@ -2,20 +2,23 @@ import { useMemo } from "react";
 import ImageryType from "../types/ImageryType";
 import ImageryContext from "./ImageryContext";
 import { DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
+import { env } from '../env';
 
 interface Props {
   children: React.ReactNode;
 }
 
 function getS3Client(): S3Client {
-  const awsRegion = import.meta.env.VITE_AWS_REGION;
+  console.log('import.meta.env.REACT_APP_AWS_REGION=', import.meta.env.REACT_APP_AWS_REGION);
+  console.log('import.meta.env=', import.meta.env);
+  const awsRegion = import.meta.env.REACT_APP_AWS_REGION ?? env.REACT_APP_AWS_REGION;
   console.log(`AWS Region: ${awsRegion}`);
 
   const config: S3ClientConfig = {
     region: awsRegion,
     credentials: {
-      accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-      secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+      accessKeyId: env.REACT_APP_AWS_ACCESS_KEY_ID,
+      secretAccessKey: env.REACT_APP_AWS_SECRET_ACCESS_KEY,
     }
   };
 
@@ -24,7 +27,7 @@ function getS3Client(): S3Client {
 }
 
 function getBucketName(): string {
-  const bucketName = import.meta.env.VITE_AWS_S3_BUCKET_NAME ?? '';
+  const bucketName = env.REACT_APP_AWS_S3_BUCKET_NAME ?? '';
   console.log(`Amazon S3 bucket nam: ${bucketName}`);
   return bucketName;
 }
@@ -114,7 +117,7 @@ const ImageryProvider: React.FC<{ children: React.ReactNode }> = ({ children }: 
       const response = await client.send(command);
       // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
       if (response.$metadata.httpStatusCode === 200) {
-        const str = await response.Body.transformToString();
+        const str = await response.Body?.transformToString() ?? '';
         return Promise.resolve({
           name: key,
           content: str

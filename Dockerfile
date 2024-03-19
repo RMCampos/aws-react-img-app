@@ -11,15 +11,16 @@ RUN npm i
 RUN npm run build
 RUN rm -rf node_modules
 
-# Deploy container
-FROM nginx:alpine
-
-# Copy files and run formatting
-COPY --from=build /app/dist/ /usr/share/nginx/html
+FROM node:18.19.0-bullseye-slim AS deploy
+WORKDIR /app
+COPY --from=build /app/dist/ .
+RUN npm install --global react-inject-env serve && \
+  chmod -R g+w .
 
 # User, port and healthcheck
-EXPOSE 80
+USER 1001
+EXPOSE 5173
 HEALTHCHECK CMD curl -f http://localhost:5173
-#USER 1001
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD react-inject-env set -d . && \
+  serve --no-clipboard --single .
